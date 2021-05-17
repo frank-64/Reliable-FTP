@@ -1,0 +1,20 @@
+-------------------------------------------------------------------------------
+CLIENT: Opened file: in_36_pay.txt, size: 36 bytes
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+CLIENT: Socket created
+CLIENT: Prepared for transfer, sending meta data
+CLIENT: Metadata sent
+-------------------------------------------------------------------------------
+CLIENT: Segment 0 is being sent, payload bytes: 35, checksum: 3183
+CLIENT: Waiting on ack
+CLIENT: ACK with sq: 0 received
+-------------------------------------------------------------------------------
+CLIENT: Segment 1 is being sent, payload bytes: 1, checksum: 33
+CLIENT: Waiting on ack
+CLIENT: ACK with sq: 1 received
+-------------------------------------------------------------------------------
+CLIENT: Transfer complete
+CLIENT: 36 bytes sent for transfer of file: in_36_pay.txt of size: 36
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------

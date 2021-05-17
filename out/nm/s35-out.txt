@@ -1,0 +1,53 @@
+-------------------------------------------------------------------------------
+SERVER: Socket created
+SERVER: Bind success ... Ready to receive meta data from client
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+SERVER: Meta data received successfully
+SERVER: Output file name: out/out.txt, expected file size: 35
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+SERVER: Waiting for the file ...
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+SERVER: File transfer started
+-------------------------------------------------------------------------------
+SERVER: Received segment with sq: 0, payload bytes: 35, checksum: 3115
+SERVER: Received payload:
+hello
+goodbye
+test 35 char payload
+
+-------------------------------------------------------------------------------
+SERVER: Calculated checksum 3115 VALID
+SERVER: Sending ACK with sq: 0
+        >>>> NETWORK: ACK sent successfully <<<<
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+SERVER: Received segment with sq: 36, payload bytes: 140733201021044, checksum: 779384175
+SERVER: Payload not terminated
+SERVER: Did NOT send any ACK
+-------------------------------------------------------------------------------
+SERVER: Received segment with sq: 0, payload bytes: 35, checksum: 3183
+SERVER: Received payload:
+hello goodbye test 36 char payload!
+-------------------------------------------------------------------------------
+SERVER: Calculated checksum 3183 VALID
+SERVER: Sending ACK with sq: 0
+        >>>> NETWORK: ACK sent successfully <<<<
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+SERVER: Received segment with sq: 1, payload bytes: 1, checksum: 33
+SERVER: Received payload:
+!
+-------------------------------------------------------------------------------
+SERVER: Calculated checksum 33 VALID
+SERVER: Sending ACK with sq: 1
+        >>>> NETWORK: ACK sent successfully <<<<
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+SERVER: File copying complete
+-------------------------------------------------------------------------------
+SERVER: 0 bytes written to file out/out.txt
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
