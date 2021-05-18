@@ -112,57 +112,63 @@ bool send_metadata(int sockfd, struct sockaddr_in* server, off_t file_size,
  */
 size_t send_file_normal(int sockfd, struct sockaddr_in* server, int infd,
                         size_t bytes_to_read) {
-
     char msg_buffer[INF_MSG_SIZE];
-    segment_t sg;
+
+    segment_t data_sg;
     segment_t ack_sg;
-    sg.sq = 0;
+    data_sg.sq = 0;
     int total_bytes =0;
+
     int segment_amount = bytes_to_read / (PAYLOAD_SIZE-1);
     if ((bytes_to_read % (PAYLOAD_SIZE-1))>0){
         segment_amount = segment_amount + 1;
     }
 
     for (int i = 0; i < segment_amount; ++i) {
-        memset(sg.payload, 0, PAYLOAD_SIZE);
-        sg.sq = i;
-        sg.type = DATA_SEG;
-        sg.payload_bytes = read(infd, sg.payload, PAYLOAD_SIZE-1);
+        memset(data_sg.payload, 0, PAYLOAD_SIZE);
+        data_sg.sq = i;
+        data_sg.type = DATA_SEG;
+        data_sg.payload_bytes = read(infd, data_sg.payload, PAYLOAD_SIZE-1);
 
         if (i == segment_amount-1) {
-            sg.last = true;
+            data_sg.last = true;
         } else {
-            sg.last = false;
+            data_sg.last = false;
         }
 
-        sg.checksum = checksum(sg.payload, false);
-        ssize_t bytes = sendto(sockfd, &sg, sizeof(sg), 0, (struct sockaddr*) server, sizeof (struct sockaddr_in));
+        data_sg.checksum = checksum(data_sg.payload, false);
+        ssize_t bytes = sendto(sockfd, &data_sg, sizeof(data_sg), 0, (struct sockaddr*) server, sizeof (struct sockaddr_in));
 
         if (bytes < 0){
             close(sockfd);
             exit_cerr(__LINE__, "Sending message failed");
         } else{
-            snprintf(msg_buffer, INF_MSG_SIZE, "Segment with sq: %d sent, payload bytes: %zu, checksum: %d", sg.sq, sg.payload_bytes, sg.checksum);
+            snprintf(msg_buffer, INF_MSG_SIZE, "Segment with sq: %d sent, payload bytes: %zu, checksum: %d", data_sg.sq, data_sg.payload_bytes, data_sg.checksum);
             print_cmsg(msg_buffer);
 
-            print_cmsg("Waiting on ACK");
-            socklen_t address_length = (socklen_t) sizeof(struct sockaddr_in);
-            ssize_t bytes_recv;
-            bytes_recv = recvfrom(sockfd, &ack_sg, sizeof(segment_t), 0, (struct sockaddr*) server, &address_length);
+            snprintf(msg_buffer, INF_MSG_SIZE, "Sent payload:\n%s", data_sg.payload);
+            print_cmsg(msg_buffer);
+            print_sep();
 
-            if (bytes_recv < 0){
+            print_cmsg("Waiting for an ACK");
+            socklen_t address_length = (socklen_t) sizeof(struct sockaddr_in);
+            ssize_t bytes_received;
+            ack_sg.type = ACK_SEG;
+            bytes_received = recvfrom(sockfd, &ack_sg, sizeof(segment_t), 0, (struct sockaddr*) server, &address_length);
+
+            if (bytes_received < 0){
                 close(sockfd);
                 exit_cerr(__LINE__, "Reading ACK failed");
-            } else if (!bytes_recv){
+            } else if (!bytes_received){
                 close(sockfd);
-                exit_cerr(__LINE__, "No ACK received");
+                exit_cerr(__LINE__, "No ACK received. Connection ending.");
             } else{
-                snprintf(msg_buffer, INF_MSG_SIZE, "ACK received with sq: %d", ack_sg.sq);
+                snprintf(msg_buffer, INF_MSG_SIZE, "ACK with sq: %d received", ack_sg.sq);
                 print_cmsg(msg_buffer);
                 print_sep();
             }
 
-            total_bytes = total_bytes + sg.payload_bytes;
+            total_bytes = total_bytes + data_sg.payload_bytes;
         }
     }
     return total_bytes;
@@ -191,9 +197,9 @@ size_t send_file_with_timeout(int sockfd, struct sockaddr_in* server, int infd,
         exit_cerr(__LINE__, "Unable to set socket");
     }
     char msg_buffer[INF_MSG_SIZE];
-    segment_t sg;
+    segment_t data_sg;
     segment_t ack_sg;
-    sg.sq = 0;
+    data_sg.sq = 0;
     int total_bytes =0;
     int segment_amount = bytes_to_read / (PAYLOAD_SIZE-1);
     if ((bytes_to_read % (PAYLOAD_SIZE-1))>0){
@@ -201,31 +207,32 @@ size_t send_file_with_timeout(int sockfd, struct sockaddr_in* server, int infd,
     }
 
     for (int i = 0; i < segment_amount; ++i) {
-        memset(sg.payload, 0, PAYLOAD_SIZE);
-        sg.sq = i;
-        sg.type = DATA_SEG;
-        sg.payload_bytes = read(infd, sg.payload, PAYLOAD_SIZE-1);
+        memset(data_sg.payload, 0, PAYLOAD_SIZE);
+        data_sg.sq = i;
+        data_sg.type = DATA_SEG;
+        data_sg.payload_bytes = read(infd, data_sg.payload, PAYLOAD_SIZE-1);
 
         if (i == segment_amount-1) {
-            sg.last = true;
+            data_sg.last = true;
         } else {
-            sg.last = false;
+            data_sg.last = false;
         }
         bool corrupted = is_corrupted(loss_prob);
-        sg.checksum = checksum(sg.payload, corrupted);
-        ssize_t bytes = sendto(sockfd, &sg, sizeof(sg), 0, (struct sockaddr*) server, sizeof (struct sockaddr_in));
+        data_sg.checksum = checksum(data_sg.payload, corrupted);
+        ssize_t bytes = sendto(sockfd, &data_sg, sizeof(data_sg), 0, (struct sockaddr*) server, sizeof (struct sockaddr_in));
 
         if (bytes < 0){
             close(sockfd);
             exit_cerr(__LINE__, "Sending message failed");
         } else {
-            snprintf(msg_buffer, INF_MSG_SIZE, "Segment with sq: %d sent, payload bytes: %zu, checksum: %d", sg.sq,
-                     sg.payload_bytes, sg.checksum);
+            snprintf(msg_buffer, INF_MSG_SIZE, "Sent payload:\n%s", data_sg.payload);
             print_cmsg(msg_buffer);
+            print_sep();
 
-            print_cmsg("Waiting on ACK");
+            print_cmsg("Waiting for an ACK");
             socklen_t address_length = (socklen_t) sizeof(struct sockaddr_in);
             ssize_t bytes_recv;
+            ack_sg.type = ACK_SEG;
             bytes_recv = recvfrom(sockfd, &ack_sg, sizeof(segment_t), 0, (struct sockaddr *) server, &address_length);
 
             while (bytes_recv < 0) {
@@ -233,19 +240,19 @@ size_t send_file_with_timeout(int sockfd, struct sockaddr_in* server, int infd,
                 if (corrupted){
                     print_cmsg("Segment was corrupted and timed out. Resending...");
                 }
-                sg.checksum = checksum(sg.payload, corrupted);
-                bytes = sendto(sockfd, &sg, sizeof(sg), 0, (struct sockaddr *) server, sizeof(struct sockaddr_in));
+                data_sg.checksum = checksum(data_sg.payload, corrupted);
+                bytes = sendto(sockfd, &data_sg, sizeof(data_sg), 0, (struct sockaddr *) server, sizeof(struct sockaddr_in));
                 bytes_recv = recvfrom(sockfd, &ack_sg, sizeof(segment_t), 0, (struct sockaddr *) server,
                                       &address_length);
             }
             if (!bytes_recv) {
                 close(sockfd);
-                exit_cerr(__LINE__, "No ACK received");
+                exit_cerr(__LINE__, "No ACK received. Connection ended.");
             } else {
-                snprintf(msg_buffer, INF_MSG_SIZE, "ACK received with sq: %d", ack_sg.sq);
+                snprintf(msg_buffer, INF_MSG_SIZE, "ACK with sq: %d received", ack_sg.sq);
                 print_cmsg(msg_buffer);
                 print_sep();
-                total_bytes = total_bytes + sg.payload_bytes;
+                total_bytes = total_bytes + data_sg.payload_bytes;
             }
         }
     }
