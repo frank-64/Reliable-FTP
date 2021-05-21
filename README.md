@@ -1,6 +1,6 @@
 # Reliable-FTP
 
-# Overview
+# About
 
 This project was coursework as part of the Operating Systems and Networks module during my second year at Newcastle University.
 
