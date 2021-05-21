@@ -33,7 +33,7 @@ server.
 7.  The client waits to receive and acknowledgement from the server. 
 8.	An ACK with sq:0 is received and the transfer is completed as the 2nd segment was the final one.
 
-![alt text](http://url/to/img.png)
+![alt text](client1.png)
 #### Server Terminal
 1.	Socket is created and is ready for a client to send metadata. 
 2.	Meta data received from client containing output file name and expected file size. 
@@ -45,7 +45,7 @@ server.
 8.	The second segment was the last segment so the file transfer is complete. 
 9.	The bytes are written to the output file.
 
-![alt text](http://url/to/img.png)
+![alt text](server1.png)
 
 ### PAR protocol with re-transmission after timeout
 
@@ -61,7 +61,7 @@ server.
 9.	The client receives an ACK from the server. 
 10.	The transfer is complete.
 
-![alt text](http://url/to/img.png)
+![alt text](client2.png)
 
 #### Server Terminal
 
@@ -73,3 +73,4 @@ server.
 6.	The second segment is received and the checksum is valid so an ACK is sent to the client. 
 7.	The second segment was the last segment so the transfer is complete.
 
+![alt text](server2.png)
