@@ -1,3 +1,1 @@
-hello
-goodbye
-test 34 char payload
+n this module you will gain an understanding of operating system and network design and implementation. As outlined above, this is an important topic in itself. It is also important because of what it teaches us about good systems and applications design in general. Many of the aspects of computer science - abstraction, algorithm design and choice 
